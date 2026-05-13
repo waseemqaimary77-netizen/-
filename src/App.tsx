@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { MolecularView } from './components/MolecularView';
 import { OrganIntro } from './components/OrganIntro';
 import { QuizPanel } from './components/QuizPanel';
+import { AIChatAssistant } from './components/AIChatAssistant';
 import { Food, DigestionStage, StageInfo, AppSection } from './types';
 
 const FOOD_CATEGORIES: Food[] = [
@@ -405,6 +406,7 @@ export default function App() {
           </div>
         </div>
       </main>
+      <AIChatAssistant />
     </div>
   );
 }
