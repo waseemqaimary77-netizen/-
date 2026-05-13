@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidScore(data) {
+      return data.keys().hasAll(['name', 'score', 'time', 'createdAt']) && 
+             data.keys().size() == 4 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 50 &&
+             data.score is number && data.score >= 0 && data.score <= 5 &&
+             data.time is number && data.time >= 0 &&
+             data.createdAt == request.time;
+    }
+
+    match /leaderboard/{scoreId} {
+      allow list: if true;
+      allow get: if isValidId(scoreId);
+      allow create: if isValidId(scoreId) && isValidScore(incoming());
+      // No updates or deletes allowed for leaderboard entries
+    }
+  }
+}

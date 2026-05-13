@@ -32,3 +32,21 @@ export interface StageInfo {
   location: string;
   summary: string;
 }
+
+export interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+export interface LeaderboardEntry {
+  id?: string;
+  name: string;
+  score: number;
+  time: number;
+  createdAt: any;
+}
+
+export type AppSection = 'intro' | 'lab' | 'quiz' | 'leaderboard';

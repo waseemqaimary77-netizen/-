@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "Score": {
+      "title": "Leaderboard Score",
+      "description": "Represents a user's quiz results.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "score": { "type": "number" },
+        "time": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "score", "time", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/leaderboard/{scoreId}": {
+      "schema": "Score",
+      "description": "Collection of leaderboard scores."
+    }
+  }
+}
