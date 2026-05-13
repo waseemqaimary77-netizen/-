@@ -44,7 +44,7 @@ export const AIChatAssistant: React.FC = () => {
       if (error.message === 'GEMINI_API_KEY_MISSING') {
         setMessages(prev => [...prev, { 
           role: 'model', 
-          text: '⚠️ **تنبيه:** مفتاح الـ API غير متوفر. إذا كنت تستخدم Vercel، يرجى إضافة `GEMINI_API_KEY` في إعدادات البيئة (Environment Variables).' 
+          text: '⚠️ **تنبيه:** لم يتم العثور على مفتاح الـ API.\n\n**إذا كنت ترفع التطبيق على Vercel:**\n1. اذهب إلى إعدادات المشروع في Vercel.\n2. اذهب إلى **Environment Variables**.\n3. أضف مفتاحاً جديداً باسم `GEMINI_API_KEY` وقيمته هي مفتاحك من Google AI Studio.\n4. قم بإعادة بناء (Redeploy) للتطبيق.' 
         }]);
       } else {
         setMessages(prev => [...prev, { role: 'model', text: 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى لاحقاً.' }]);

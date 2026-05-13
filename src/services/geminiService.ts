@@ -7,9 +7,14 @@ export class GeminiService {
 
   private getClient() {
     if (!this.ai) {
-      // In AI Studio, process.env.GEMINI_API_KEY is available.
-      // In production (e.g. Vercel), it must be provided in environment variables.
-      const key = typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : undefined;
+      // Safely access process.env to avoid ReferenceError in browser
+      let key: string | undefined;
+      try {
+        key = process.env.GEMINI_API_KEY;
+      } catch (e) {
+        // Fallback for environments where process is not defined
+        key = (window as any).process?.env?.GEMINI_API_KEY;
+      }
       
       if (!key) {
         throw new Error("GEMINI_API_KEY_MISSING");
@@ -22,25 +27,21 @@ export class GeminiService {
   async chat(message: string, history: { role: 'user' | 'model', parts: { text: string }[] }[]) {
     try {
       const client = this.getClient();
-      // Create a chat instance with the correct history format
-      const chat = client.chats.create({
-        model: MODEL_NAME,
-        config: {
-          systemInstruction: `أنتِ "المعلمة حنين حمد"، معلمة علوم خبيرة ومتخصصة في شرح "الجهاز الهضمي للإنسان".
-أهدافك:
-1. الإجابة على أسئلة الطلاب بأسلوب تعليمي، مبسط، ومشجع.
-2. استخدام لغة عربية فصحى بسيطة وودودة.
-3. التركيز حصرياً على مواضيع الجهاز الهضمي (الأعضاء، الإنزيمات، عملية الهضم، التغذية الصحية).
-4. إذا سأل الطالب عن موضوع خارج الجهاز الهضمي، وجهيه بلطف للعودة لموضوع الدرس.
-5. يمكنك استخدام الرموز التعبيرية (Emoji) لجعل المحادثة ممتعة.
-6. كوني ملهمة وحفزي الطلاب على الاستكشاف.`,
-        },
-        // Fill initial history if needed, but since we are sending the whole state or starting fresh:
-        history: history.slice(0, -1), // Everything except the last message which we will send now
+      const model = client.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: "أنتِ \"المعلمة حنين حمد\"، معلمة علوم خبيرة ومتخصصة في شرح \"الجهاز الهضمي للإنسان\".\nأهدافك:\n1. الإجابة على أسئلة الطلاب بأسلوب تعليمي، مبسط، ومشجع.\n2. استخدام لغة عربية فصحى بسيطة وودودة.\n3. التركيز حصرياً على مواضيع الجهاز الهضمي (الأعضاء، الإنزيمات، عملية الهضم، التغذية الصحية).\n4. إذا سأل الطالب عن موضوع خارج الجهاز الهضمي، وجهيه بلطف للعودة لموضوع الدرس.\n5. يمكنك استخدام الرموز التعبيرية (Emoji) لجعل المحادثة ممتعة.\n6. كوني ملهمة وحفزي الطلاب على الاستكشاف.",
       });
 
-      const response = await chat.sendMessage({ message });
-      return response.text;
+      const chat = model.startChat({
+        history: history.slice(0, -1).map(h => ({
+          role: h.role === 'model' ? 'model' : 'user',
+          parts: h.parts
+        })),
+      });
+
+      const result = await chat.sendMessage(message);
+      const response = await result.response;
+      return response.text();
     } catch (error: any) {
       console.error("Gemini API Error:", error);
       if (error.message?.includes("API_KEY_INVALID") || error.message?.includes("403")) {
