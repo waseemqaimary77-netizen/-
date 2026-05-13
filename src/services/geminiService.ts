@@ -3,17 +3,27 @@ import { GoogleGenAI } from "@google/genai";
 const MODEL_NAME = "gemini-3-flash-preview";
 
 export class GeminiService {
-  private ai: any;
+  private ai: any = null;
 
-  constructor() {
-    // We initialize the client. In AI Studio, process.env.GEMINI_API_KEY is handled automatically.
-    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  private getClient() {
+    if (!this.ai) {
+      // In AI Studio, process.env.GEMINI_API_KEY is available.
+      // In production (e.g. Vercel), it must be provided in environment variables.
+      const key = typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : undefined;
+      
+      if (!key) {
+        throw new Error("GEMINI_API_KEY_MISSING");
+      }
+      this.ai = new GoogleGenAI({ apiKey: key });
+    }
+    return this.ai;
   }
 
   async chat(message: string, history: { role: 'user' | 'model', parts: { text: string }[] }[]) {
     try {
+      const client = this.getClient();
       // Create a chat instance with the correct history format
-      const chat = this.ai.chats.create({
+      const chat = client.chats.create({
         model: MODEL_NAME,
         config: {
           systemInstruction: `أنتِ "المعلمة حنين حمد"، معلمة علوم خبيرة ومتخصصة في شرح "الجهاز الهضمي للإنسان".

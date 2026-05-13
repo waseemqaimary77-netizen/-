@@ -40,8 +40,15 @@ export const AIChatAssistant: React.FC = () => {
 
       const response = await geminiService.chat(userMessage, history);
       setMessages(prev => [...prev, { role: 'model', text: response || 'عذراً، لم أستطع معالجة طلبك.' }]);
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى لاحقاً.' }]);
+    } catch (error: any) {
+      if (error.message === 'GEMINI_API_KEY_MISSING') {
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: '⚠️ **تنبيه:** مفتاح الـ API غير متوفر. إذا كنت تستخدم Vercel، يرجى إضافة `GEMINI_API_KEY` في إعدادات البيئة (Environment Variables).' 
+        }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى لاحقاً.' }]);
+      }
     } finally {
       setIsLoading(false);
     }
